@@ -19,6 +19,87 @@
 
 #define BACKLOG 10     // how many pending connections queue will hold
 
+//
+#define STORAGE 25
+int pos = 0;
+
+char* keys[STORAGE];
+char* values[STORAGE];
+
+
+int initStorage(){
+	int i = 0;
+	//malloc arrays
+	for(i=0; i< STORAGE; i++){
+		keys[i] 	= malloc(sizeof(char)*8);
+		values[i]	= malloc(sizeof(char)*128);
+	}
+	
+	return 0;	
+}
+
+int  addKeyValue(char* newKey,char* newValue){
+	//check if the new key and value are the correct size
+	if( sizeof(newKey) > sizeof(char)*8 || sizeof(newValue) > sizeof(char)*128 ){
+		return -1;
+	}
+	//check if there is enough room
+	if(pos >= STORAGE){
+		return -1;
+	}
+	
+	keys[pos] 	= newKey;
+	values[pos] 	= newValue;
+
+	pos++;
+
+	return 0;
+}
+
+int removeKey(char* key){
+	int i;
+	
+	for(i=0; i<STORAGE; i++){
+		if(strcmp(keys[i],key)==0){
+			for( ; i<STORAGE -1; i++){
+				keys[i] 	= keys[i+1];
+				values[i] 	= values[i+1];
+			}
+			pos--;
+			return 0;
+		}
+	}
+		
+	return -1;
+}
+
+int getValue(char* key,char** value){
+	int i=0;
+
+	for(i=0; i<STORAGE; i++){
+		if(strcmp(keys[i],key)==0){
+			value = &values[i];
+			printf("\n\n %s \n\n",value);
+			return 0;
+		}
+	}
+	return -1;
+}
+
+int main(){
+	char *k = "12345678";
+	char *v = "frick the police";
+	char *nv = malloc(sizeof(char)*128);
+	initStorage();
+	addKeyValue(k,v);
+	getValue(k,&nv);
+	printf("(%s,%s)\n",keys[pos-1],values[pos-1]);
+	printf("(%s,%s)\n",k,nv);
+
+
+}
+
+/*
 void sigchld_handler(int s)
 {
     // waitpid() might overwrite errno, so we save and restore it:
@@ -131,3 +212,5 @@ int main(void)
 
     return 0;
 }
+
+*/

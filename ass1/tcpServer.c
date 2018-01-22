@@ -21,6 +21,8 @@
 
 //
 #define STORAGE 25
+#define MAXDATASIZE 100
+
 int pos = 0;
 
 char* keys[STORAGE];
@@ -73,19 +75,19 @@ int removeKey(char* key){
 	return -1;
 }
 
-int getValue(char* key,char** value){
+int getValue(char* key,char* value){
 	int i=0;
 
 	for(i=0; i<STORAGE; i++){
 		if(strcmp(keys[i],key)==0){
-			value = &values[i];
-			printf("\n\n %s \n\n",value);
+			value = values[i];
 			return 0;
 		}
 	}
 	return -1;
 }
 
+/*
 int main(){
 	char *k = "12345678";
 	char *v = "frick the police";
@@ -98,8 +100,7 @@ int main(){
 
 
 }
-
-/*
+*/
 void sigchld_handler(int s)
 {
     // waitpid() might overwrite errno, so we save and restore it:
@@ -124,6 +125,8 @@ void *get_in_addr(struct sockaddr *sa)
 int main(void)
 {
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
+    int numbytes;
+    char buf[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
     socklen_t sin_size;
@@ -201,8 +204,22 @@ int main(void)
         printf("server: got connection from %s\n", s);
 
         if (!fork()) { // this is the child process
-            close(sockfd); // child doesn't need the listener
-            if (send(new_fd, "Hello, world!", 13, 0) == -1)
+	    //close(sockfd); child doesn't need the listener
+            
+	    if (send(new_fd, "Hello, world!\n", 14, 0) == -1)
+                perror("send");
+
+	    
+	    if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
+        	perror("recv");
+        	exit(1);
+    	    }
+
+            buf[numbytes] = '\0';
+
+            printf("server: received '%s'\n",buf);
+
+	    if (send(new_fd, "Hello, world!\n", 14, 0) == -1)
                 perror("send");
             close(new_fd);
             exit(0);
@@ -213,4 +230,3 @@ int main(void)
     return 0;
 }
 
-*/

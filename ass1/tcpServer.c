@@ -50,8 +50,8 @@ int  addKeyValue(char* newKey,char* newValue){
 		return -1;
 	}
 	
-	keys[pos] 	= newKey;
-	values[pos] 	= newValue;
+	strcpy(keys[pos] ,newKey);
+	strcpy(values[pos] ,newValue);
 
 	pos++;
 
@@ -60,12 +60,13 @@ int  addKeyValue(char* newKey,char* newValue){
 
 int removeKey(char* key){
 	int i;
-	
+	int j;
+
 	for(i=0; i<STORAGE; i++){
 		if(strcmp(keys[i],key)==0){
-			for( ; i<STORAGE -1; i++){
-				keys[i] 	= keys[i+1];
-				values[i] 	= values[i+1];
+			for(j=i; j<STORAGE -1; j++){
+				keys[j] 	= keys[j+1];
+				values[j] 	= values[j+1];
 			}
 			pos--;
 			return 0;
@@ -77,30 +78,166 @@ int removeKey(char* key){
 
 int getValue(char* key,char* value){
 	int i=0;
-
+	printf("get value! \n");
 	for(i=0; i<STORAGE; i++){
 		if(strcmp(keys[i],key)==0){
-			value = values[i];
+			strcpy(value,values[i]);
 			return 0;
 		}
 	}
 	return -1;
 }
+int getallkeys(char* value,char* result){
+	int i;
 
+	for(i=0; i<STORAGE; i++){
+		if(strcmp(values[i],value)==0){
+			strcat(result,keys[i]);
+			strcat(result," ");
+		}
+	}
+	return 1;
+}
+int tokenize (char* sp, char *tokens[]){
+	char s[256];
+	int i=0;
+	strncpy(s,sp,sizeof(s));
+	s[sizeof(s)-1] = '\0';
+
+	printf("\ntokens: %s\n",s);
+	char * token = strtok(s, " ");
+
+	while(token != NULL){	
+		strcpy(tokens[i++],token);
+		printf("i = %i",i);
+		token = strtok(NULL," ");
+	}
+	
+	printf("\n finished \n");
+	return 1;
+}
+
+int doCommand(char* tokens[],char* result){
+	char *commands[5] = {"add","getvalue","getallkey","getall","remove"};
+	int i;
+	int match =1;
+
+	for(i=0; i<5;i++){
+		if(strcmp(tokens[0],commands[i]) !=0){
+			match =0;
+		}else{
+			match =1;
+			break;
+		}
+	}
+	if(match < 1){
+		return -1;
+	}
+
+	if(strcmp(tokens[0],"add") ==0){
+		addKeyValue(tokens[1],tokens[2]);
+		result = "added value!\n"
+	}
+	else if(strcmp(tokens[0],"getvalue") ==0){
+		getValue(tokens[1],result);
+        }
+	else if(strcmp(tokens[0],"getallkey") ==0){
+        	getallkeys(tokens[1],result);
+	}	
+	else if(strcmp(tokens[0],"getall") ==0){
+		for(int i=0; i<pos ;i++){
+
+			strcat(result,keys[i]);
+			strcat(result,",");
+			strcat(result,values[i]);
+			strcat(result," ");
+		}
+
+        }
+	else if(strcmp(tokens[0],"remove") ==0){
+		removeKey(tokens[1]);
+		result = "removed value!\n";
+        }
+	else{
+		return -1;
+	}
+	return 1;
+
+}
+int recieve(char* s,char* result){
+	char *tk[3];
+	
+	for(int i =0; i<3; i++){
+                tk[i] = malloc(sizeof(char)*128)
+        }
+	tokenize(s,tk);
+	
+	r= doCommand(tk,result);
+
+	return r;
+}
 /*
 int main(){
 	char *k = "12345678";
 	char *v = "frick the police";
 	char *nv = malloc(sizeof(char)*128);
+	char *tk0[3];
+	char *tk1[3];
+	char *tk2[3];
+        char *tk3[3];
+	char *tk4[3];
+	char *result0 = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
+	char *result1 = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
+	char *result2 = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
+	char *result = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
+
 	initStorage();
 	addKeyValue(k,v);
-	getValue(k,&nv);
+	getValue(k,nv);
 	printf("(%s,%s)\n",keys[pos-1],values[pos-1]);
 	printf("(%s,%s)\n",k,nv);
+	
+	char *s0 = "add 12345679 helloWorld";
+	char *s1 = "getvalue 12345679";
+	char *s2 = "remove 12345678";
+	char *s3 = "getallkey helloWorld";
+	char *s4 = "getall";
 
+	for(int i =0; i<3; i++){
+		tk0[i] = malloc(sizeof(char)*128);
+		tk1[i] = malloc(sizeof(char)*128);
+		tk2[i] = malloc(sizeof(char)*128);
+		tk3[i] = malloc(sizeof(char)*128);
+		tk4[i] = malloc(sizeof(char)*128);
+
+	}
+	printf("\ntokenizing\n");	
+	tokenize(s0,tk0);
+	tokenize(s1,tk1);
+	tokenize(s2,tk2);
+	tokenize(s3,tk3);
+	tokenize(s4,tk4);
+
+	printf("...\ndone\n");
+
+	int r = doCommand(tk0,result);
+	printf("\nadd result: %i\n",r);	
+
+	doCommand(tk1,result0);
+	printf("\ngetvalue result: %s\n",result0);
+	
+	r= doCommand(tk2,result);
+	printf("\nremove result: %i\n",r);
+
+	doCommand(tk3,result1);
+	printf("\ngetallkey result: %s\n",result1);
+
+	doCommand(tk4,result2);
+	printf("\ngetall result: %s\n",result2);
 
 }
 */
+
 void sigchld_handler(int s)
 {
     // waitpid() might overwrite errno, so we save and restore it:

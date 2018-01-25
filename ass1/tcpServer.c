@@ -21,7 +21,7 @@
 
 //
 #define STORAGE 25
-#define MAXDATASIZE 100
+#define MAXDATASIZE 300
 
 int pos = 0;
 
@@ -99,44 +99,29 @@ int getallkeys(char* value,char* result){
 	return 1;
 }
 int tokenize (char* sp, char *tokens[]){
-	char s[256];
+	char s[300];
 	int i=0;
+	printf("Server: tokenize \n");
 	strncpy(s,sp,sizeof(s));
 	s[sizeof(s)-1] = '\0';
-
-	printf("\ntokens: %s\n",s);
+	
 	char * token = strtok(s, " ");
-
 	while(token != NULL){	
 		strcpy(tokens[i++],token);
-		printf("i = %i",i);
 		token = strtok(NULL," ");
 	}
 	
-	printf("\n finished \n");
 	return 1;
 }
 
 int doCommand(char* tokens[],char* result){
-	char *commands[5] = {"add","getvalue","getallkey","getall","remove"};
-	int i;
-	int match =1;
 
-	for(i=0; i<5;i++){
-		if(strcmp(tokens[0],commands[i]) !=0){
-			match =0;
-		}else{
-			match =1;
-			break;
-		}
-	}
-	if(match < 1){
-		return -1;
-	}
+	printf("Server: executing command %s \n",tokens[0]);
 
 	if(strcmp(tokens[0],"add") ==0){
 		addKeyValue(tokens[1],tokens[2]);
-		result = "added value!\n"
+		strcpy(result,"added value!\n");
+		printf("from doCommand: %s \n",result);
 	}
 	else if(strcmp(tokens[0],"getvalue") ==0){
 		getValue(tokens[1],result);
@@ -145,8 +130,9 @@ int doCommand(char* tokens[],char* result){
         	getallkeys(tokens[1],result);
 	}	
 	else if(strcmp(tokens[0],"getall") ==0){
+		strcpy(result,"");
 		for(int i=0; i<pos ;i++){
-
+		
 			strcat(result,keys[i]);
 			strcat(result,",");
 			strcat(result,values[i]);
@@ -156,87 +142,28 @@ int doCommand(char* tokens[],char* result){
         }
 	else if(strcmp(tokens[0],"remove") ==0){
 		removeKey(tokens[1]);
-		result = "removed value!\n";
+		strcpy(result,"removed value!\n");
         }
 	else{
-		return -1;
+		printf("\n '%s'vs 'remove' %i \n ",tokens[0],strcmp(tokens[0],"remove"));
 	}
 	return 1;
 
 }
 int recieve(char* s,char* result){
 	char *tk[3];
-	
+	int r;	
+	printf("Server: recieved message \n");	
 	for(int i =0; i<3; i++){
-                tk[i] = malloc(sizeof(char)*128)
+                tk[i] = malloc(sizeof(char)*128);
         }
-	tokenize(s,tk);
 	
+	tokenize(s,tk);
+	printf("%s",tk[0]);	
 	r= doCommand(tk,result);
-
+	printf("from recieve %s \n",result);
 	return r;
 }
-/*
-int main(){
-	char *k = "12345678";
-	char *v = "frick the police";
-	char *nv = malloc(sizeof(char)*128);
-	char *tk0[3];
-	char *tk1[3];
-	char *tk2[3];
-        char *tk3[3];
-	char *tk4[3];
-	char *result0 = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
-	char *result1 = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
-	char *result2 = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
-	char *result = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
-
-	initStorage();
-	addKeyValue(k,v);
-	getValue(k,nv);
-	printf("(%s,%s)\n",keys[pos-1],values[pos-1]);
-	printf("(%s,%s)\n",k,nv);
-	
-	char *s0 = "add 12345679 helloWorld";
-	char *s1 = "getvalue 12345679";
-	char *s2 = "remove 12345678";
-	char *s3 = "getallkey helloWorld";
-	char *s4 = "getall";
-
-	for(int i =0; i<3; i++){
-		tk0[i] = malloc(sizeof(char)*128);
-		tk1[i] = malloc(sizeof(char)*128);
-		tk2[i] = malloc(sizeof(char)*128);
-		tk3[i] = malloc(sizeof(char)*128);
-		tk4[i] = malloc(sizeof(char)*128);
-
-	}
-	printf("\ntokenizing\n");	
-	tokenize(s0,tk0);
-	tokenize(s1,tk1);
-	tokenize(s2,tk2);
-	tokenize(s3,tk3);
-	tokenize(s4,tk4);
-
-	printf("...\ndone\n");
-
-	int r = doCommand(tk0,result);
-	printf("\nadd result: %i\n",r);	
-
-	doCommand(tk1,result0);
-	printf("\ngetvalue result: %s\n",result0);
-	
-	r= doCommand(tk2,result);
-	printf("\nremove result: %i\n",r);
-
-	doCommand(tk3,result1);
-	printf("\ngetallkey result: %s\n",result1);
-
-	doCommand(tk4,result2);
-	printf("\ngetall result: %s\n",result2);
-
-}
-*/
 
 void sigchld_handler(int s)
 {
@@ -264,6 +191,7 @@ int main(void)
     int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
     int numbytes;
     char buf[MAXDATASIZE];
+    char r[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage their_addr; // connector's address information
     socklen_t sin_size;
@@ -271,11 +199,14 @@ int main(void)
     int yes=1;
     char s[INET6_ADDRSTRLEN];
     int rv;
-
+    char* b = malloc(sizeof(char)*MAXDATASIZE); 
+    char *result = malloc( ( (sizeof(char)*128) + (sizeof(char)*8) )*10 );
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE; // use my IP
+	
+    initStorage();
 
     if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
@@ -340,7 +271,7 @@ int main(void)
             s, sizeof s);
         printf("server: got connection from %s\n", s);
 
-        if (!fork()) { // this is the child process
+//        if (!fork()) { // this is the child process
 	    //close(sockfd); child doesn't need the listener
             
 	    if (send(new_fd, "Hello, world!\n", 14, 0) == -1)
@@ -352,18 +283,24 @@ int main(void)
         	exit(1);
     	    }
 
-            buf[numbytes] = '\0';
+            buf[numbytes-1] = '\0';
+	    strcpy(b,buf);
 
-            printf("server: received '%s'\n",buf);
-
-	    if (send(new_fd, "Hello, world!\n", 14, 0) == -1)
+            printf("server: received %s\n",b);
+	    recieve(b,result);
+	    //result = "success\n";
+	    strcpy(r,result);
+	    printf("server sending: %s\n",result);
+	    if (send(new_fd, result,strlen(result), 0) == -1)
                 perror("send");
-            close(new_fd);
-            exit(0);
-        }
-        close(new_fd);  // parent doesn't need this
+//            close(new_fd);
+//            exit(0);
+//        }
+          memset(buf, 0, sizeof(buf));
+          memset(r, 0, sizeof(r));
+	  close(new_fd);  // parent doesn't need this
+    	
     }
 
     return 0;
 }
-

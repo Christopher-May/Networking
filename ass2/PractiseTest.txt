@@ -1,0 +1,127 @@
+Christopher May
+cjm325
+11158165
+
+(a) The protocol intended to replace IPv4; currently is being gradually deployed in the
+Internet.
+
+	IPv6 is currently being deployed to replace IPv4
+
+(b) A technique whereby the hosts within a network can simultaneously share the same
+“public” IP address for external traffic, while using different “private” IP addresses
+internally.
+
+	The technique is NAT.
+
+(c) The use of multiple antennas at both the transmitter and receiver to improve
+communication performance.
+
+	Multiple sender, multiple receiver (MIMO) antenna. For the case where both the sender and receiver have m antennas. When transmit same data on each sender antenna and xploit spatial diversity.
+
+
+(d) A data link layer protocol that is widely used in the Internet on point-to-point links.
+
+	point-to-point protocol
+
+(e) A multiple access protocol in which there is no synchronization among the nodes
+contending for the shared channel; when a node gets some data to transmit, it tries to
+do so immediately without first attempting to check if the channel is idle.
+
+	pure ALOHA. 
+
+
+(f) The physical media commonly used to connect a home telephone to the
+neighbourhood phone company box; also used in many Ethernet LANs.
+
+	The guided media used commonly to connect home telephone and used in many Etherenet LANs is twisted pair.
+
+
+2. Data Communication Fundamentals (6 marks in total)
+
+(a) (2 marks) Give the maximum achievable data rate in bits per second on a noise-free
+channel of bandwidth 8 KHz, assuming that each transmitted symbol has 16 possible
+values.
+	Nyquists Theorem:  Max in symbols/ second = 2H
+		2(8Hz)= 16 symbols/s
+	bps = (# bits per symbol)* symbols/second
+		= 16 bits/symbol * 16 symbols/s
+		= 256 bps
+
+(b) (2 marks) There are many communication satellites that orbit the Earth at an altitude of approximately 35,800 km. Why this particular altitude?
+
+	geostationary satellites  orbit Earth at an altitude if approximately 35,800 KM because it allows the satellite to maintain a fixed position.
+
+(c) (2 marks) Describe the distinction between the virtual circuit and datagram types of packet switching networks.
+
+	In datagram networks, packets of the same flow can follow different paths and in virtual circuit networks, packets of the same flow must follow the same path.
+
+3. Data Link Layer (8 marks in total)
+
+(a) (4 marks) Outline the rules governing the sender and receiver actions for
+transmissions, retransmissions, and acknowledgements, when using a go-back-n
+sliding window protocol with a maximum sending window size of W.
+	The receiver awks to a transmission that is has a sequence number one above the previous tranmission or a retranmission.The sender can send W amount of transmissions before retransmission. When there is a awk that is greater then another transmission waiting to be transmited, the sender can assume that the lower sequence number tranmission was sent successfully. 
+
+(b) (2 marks) Consider a communication link using a selective repeat sliding window
+protocol, with a 4-bit sequence number, in which the receiver has limited buffer space
+and will buffer at most the frames with sequence numbers i+2 mod 16, i+3 mod 16,
+and/or i+4 mod 16, if received out-of-order when the receiver is expecting next the
+frame with sequence number i+1 mod 16. What is the maximum sending window
+size that can be permitted?
+	
+	The sending window and receiving window should be half of the max sequence number. 
+
+(c) (2 marks) Consider a code in which each “codeword” contains k copies of each of
+the m message bits, yielding a codeword of length mk. What is the resulting
+Hamming distance?
+
+4. Multiple Access Protocols and Local Area Networks (9 marks in total)
+
+(a) (2 marks) Describe the “virtual sensing” mechanism used in the 802.11 multiple
+access protocol.
+
+	Each frame carries a NAV ("network allocation vector") field that indicates how long the sequence of frames of which this frame is a part will take to complete; "virtual sensing" mechanism considers the channel "busy" for this time period; e.g. in a data frame, NAV field duration covers the SIFS and the ACK; nodes that hear the data frame then know not to transmit before the ACK transmission has been completed, even if they are out of range of the node sending the ACK
+
+(b) (3 marks) How exactly do nonpersistent CSMA, 1-persistent CSMA, and 1-persistent
+CSMA/CD differ from each other?
+	nonpersistent CSMA listens to the channel then delays after a random time if idle, 1-persistent CSMA is different as it delays until detected idle, and CSMA/CD will abort when a collision is detected to be occuring.
+
+(c) (4 marks) Describe, with the assistance of an example in each case, the hidden
+terminal problem, and the exposed terminal problem, that may arise in wireless
+LANs.
+	An example of the hidden termianl problem is when node A and node C is in range of B but A and C are not in range. If both A and C want to transmit to B their transmissions can collide.
+
+	An example of exposed terminal problem is when node A is in range of B, B is in range of A and C and C is in range of D. D want to transmit to C and A wants to transmit to B. It is possible but they won't because they sense the channel busy.
+
+5. Network Layer (15 marks in total)
+(a) (2 marks) Link weights/costs, as needed for use in intra-AS routing algorithms,
+typically do not incorporate dynamic measures of queue size or delay. Why not?
+	Because dynamic measures can cause swashing, Where there everyone is going to B because it is empty, then to A and repeat.
+
+(b) (3 marks) Describe the differentiated services approach to providing quality of
+service in the Internet and the advantages it provides relative to the integrated
+services approach.
+	Integrated Services supports resource reservations for individual flows, which needs support from routers and isn't really clear we want it. Differentiated Services traffic is given a class the pros and cons are: deployable in small steps, minimal overhead, class based, no guarantee class is honored.
+
+(c) (4 marks) Consider the following graph 
+
+a 	b 	c 	d 	e 	f 	g
+0	1	2	3	3	2	1
+-	3	2	3	3	2	3
+-	3	4	3	3	4	3
+-	5	4	5	5	4	5
+-	5	6	5	5	6	5			
+
+(d) (2 marks) State the purpose of each of the following protocols: BGP, DHCP.
+	BGP is for exchanging routing and reachability info between autonomous systems
+	DHCP dynamically assigns ip addresses. So when you connect to the router itll give you an ip address and take it away when you time out.
+
+(e) (4 marks) Outline how routing for mobile hosts can be supported within the network layer.
+	When a mobile host completely disconnects, or stays on the same network and moves around it is no problem. When they're moving around within a extended LAN it is a problem for the Link layer not the network layer. When a mobile host wants to move to different networks and keep the same ip that is the problem. We can just not rely on the mobile host not having the same ip or use routing tables and use the home ip as sort of proxy.
+
+6. Transport Layer (6 marks in total)
+(a) (3 marks) What fields from the IPv4 and TCP headers may be needed when demultiplexing at the destination host?
+	A field from ipv4 would be the protocol field, to tell which protocol to hand it off to. The source IP source Port, destination IP and destination Port are used by TCP.
+
+(b) (3 marks) Describe how connection establishment is implemented in TCP.
+	TCP uses a three-way handshake. First client connects, then client gets an awk and finally client sends back an awk. 

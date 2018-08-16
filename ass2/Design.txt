@@ -1,0 +1,71 @@
+Christopher May
+cjm325
+11158165
+
+1. Design 
+	Overall:
+		Instead of looping between a fixed number, the tranmissions just keep increasing. I was planning on changing this design choice to something more similar to what is shown in class, however I ran out of time and it didn't effect my testing because it can go until max int. I also did not finish implementing the ability for receivers to disconnect and reconnect. The receiver can disconnect fine but cannot reconnect. Also the msg sending and receiving is slow as it deals with receiver A before moving onto receive B, etc. 
+
+	Receiver:																																|
+		./receiver <PORT> <PROBABILITY>																									   \ /
+																																			v
+			The port and IP you chose has to be from the document the sender reads from or added before sender starts up. I use y instead of Y
+
+		The job of the receiver is to receive transmissions check if it is the right tranmission and then tell the sender it received the tranmission.
+
+		First we set up everything (get the port and loss porbability from user, set up connection, etc). 
+	-->	Then we get into the good stuff where we wait until we get a transmission. 
+	|		If this is our first we update our seqNum with the starting
+	|	We check if we lost the transmission from probability
+	|		if  not we check the seqNum if it is  == to our current we received
+	|			we ask user if they want to resend awk or lose it
+	|		else if it is == current+1 then it is the next sequence
+	|			we ask user if they want to resend or lose it
+	|		else it is out of order and we don't need it
+	L---repeat
+
+	Sender:
+		./sender <max window size> <starting number> <timeout>
+		The sender reads the receivers ips and ports from receivers.txt in the format for that is <IP> <PORT>\n 
+
+		Boring set up of needed variables (malloc receivers,their windows,etc)
+
+		Read receivers ip & ports and assign to receivers
+
+		Start taking transmissions to send
+
+		In processRecievers we check if the windows of any receiver is full if so send the transmissions in window using handle, else we get input from user. If the input == QUIT we send all the transmissions in the window and wait for user to start us up again. Else we simply grab input from user and send it to receivers using handle. Handle makes a connection then sends a transmission to a receiver, using getReplies waits for the times provided for a reply and depending on the reply or if there is not reply adds the message to the window, if there was no reply we add the transaction to the Window, else we remove any transaction < the awk seq #. GetReplies is a select statement that is used to possibly get a reply from the receiver.
+
+		and repeat ...
+
+	Testing & Issues:
+		To test thing I bashed my head against it... I had a lot of troubles getting is assignment to work so I had a lot of errors. Using GDB,prints and a lot of manual testing to check if the output looked right I got something that I don't believe crashes anymore and works pretty well. One issue that happens for whatever reason is that a out of order transmission sometimes appears, This doesn't break anything and the sender and receiver deal with it correctly but is does happen, The reason I believe is to help simulate different speeds the transmissions will take :). A design choice that I planned on replacing with something more faithful to the b and g sliding discussed in class is that instead of looping around a number the sequence numbers keep increasing. This doesn't have any effect on the usability of this program because it is pretty hard to max it.
+2.
+	In Selective Repeat Sliding Window (SRSW) every awk has to be explicit and there can be requests for transmissions. So assuming my code is perfect, which isn't a good bet. In the reciever we would:
+		1. Need to know the size of the window
+		2. store out of order messages and send awks for them for example we're waiting on 5 but get 6 and 7 we can send awks for 6 and 7 and store the message until needed. I would need to put some kind of storage for the messages to allow for this to happen.
+		3. change the logic when replying to already seen transmissions to look into the out of order transmissions to awk them
+	In the sender:
+		1. Change the way we remove transmissions from the window, We'll remove them one by one instead of if it is less then the awk remove it
+
+	I would probably have to change other stuff, like what meta data to send each other and other stuff. I believe this would be a good step in the right direction though.
+
+
+3.
+
+	The first thing I would do if my program had to deal with lots of receivers would start from the beginning and not look at my code. The code I wrote is not the most effecient. The way I send the messages in the Window, update the Window and store the Window values is messy. When sending messages there is a xrazy amount of loops, same with organising the window simply because performance isn't really a concern. Also the way I store transmissions in the window is a huge waste of space if there are lots of receivers, I'm sure there would be a way to deal with that better. Having to wait for replies from lots of receivers would take forever too and would probably have to have some kind of concurrancy. When reading about SELECT on Beejs website he mentions a tool (libevent) that is quicker then SELECT and looking on libevents website it has a graph that shows how better libevent performs. 
+	The main thing slowing my program would be having to wait for 100s or 1000s of replies, because I deal with receivers one at a time. Having to deal with storing all the windows and other data for the receivers. There would be a lot of data as well as repeated data with 1000s  of windows. So I would defiantly need to send the replies and deal with awks simutainlessly as well as a better way to store messages, because every receiver doesn't need a copy of the same message. 
+
+	Talking about the window when moving elements I am very unefficient and simply memcopy. Searching the window could also be more efficient using a better algorithm instead of simply looping through. To fix moving I could simply point to the location or something similar. 
+
+	When reading about SELECT on beejs website/textbook he says that SELECT is not the quickest tool in the shed and links to another websites that has a graph of the speeds of other similar functions, the one in the link called libevent seems to be significantly better when the load increases. http://libevent.org/
+
+	Looking for material on how to anwser this question I found the c10k problem on kegal.com/c10k.com, where the author says there are five common approaches. It seems like having threads deal with the maximum amount of clients, using nonblocking I/O. 
+	    1. Serve many clients with each thread, and use nonblocking I/O and level-triggered readiness notification
+	    2. Serve many clients with each thread, and use nonblocking I/O and readiness change notification
+	    3. Serve many clients with each server thread, and use asynchronous I/O
+	    4. serve one client with each server thread, and use blocking I/O
+	    5. Build the server code into the kernel  
+
+
+
